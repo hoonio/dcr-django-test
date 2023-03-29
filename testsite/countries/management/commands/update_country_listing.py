@@ -11,12 +11,7 @@ from countries.models import Country, Region, TopLevelDomain
 class Command(BaseCommand):
     help = "Loads country data from a JSON file."
 
-    IMPORT_FILE = os.path.join(
-        settings.BASE_DIR, "..", "data", "countries.json")
-
     def get_data(self):
-        # with open(self.IMPORT_FILE) as f:
-        #     data = json.load(f)
         resp = requests.get(
             'https://storage.googleapis.com/dcr-django-test/countries.json')
         return resp.json()
@@ -47,10 +42,12 @@ class Command(BaseCommand):
                     "population": row["population"],
                     "capital": row["capital"],
                     "region": region,
-                    # "topLevelDomain": []
+                    "topLevelDomain": []
                 },
             )
-            country.topLevelDomain.set(tld_list)
+            for tld in tld_list:
+                country.topLevelDomain.add(tld)
+            country.save()
 
             self.stdout.write(
                 self.style.SUCCESS(
